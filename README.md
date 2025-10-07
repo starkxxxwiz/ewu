@@ -53,7 +53,7 @@ run.bat
 
 1. **Download/Clone the Project**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/starkxxxwiz/ewu
    cd tool
    ```
 
@@ -70,7 +70,7 @@ run.bat
 
 1. **Download/Clone the Project**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/starkxxxwiz/ewu
    cd tool
    ```
 
@@ -342,3 +342,4 @@ Potential improvements (contributions welcome):
 **Made with ❤️ for EWU Students**
 
 *Happy Course Browsing! 🎓*
+

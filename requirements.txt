@@ -1,0 +1,6 @@
+requests>=2.31.0
+rich>=13.7.0
+pyfiglet>=1.0.2
+reportlab>=4.0.7
+urllib3>=2.1.0
+

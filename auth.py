@@ -16,18 +16,31 @@ class EWUAuthenticator:
         self.session_id = None
         self.session = requests.Session()
         
-    def authenticate(self, username: str, password: str) -> Dict[str, any]:
+    def authenticate(self, username: str, password: str, proxy_address: Optional[str] = None) -> Dict[str, any]:
         """
         Authenticate user with EWU portal
         
         Args:
             username: Student ID
             password: User password
+            proxy_address: Optional proxy address in format 'ip:port'
             
         Returns:
             Dictionary with status and message
         """
         try:
+            # Setup proxy configuration if provided
+            proxies = None
+            timeout = 10
+            
+            if proxy_address:
+                proxy_url = f"http://{proxy_address}"
+                proxies = {
+                    "http": proxy_url,
+                    "https": proxy_url
+                }
+                timeout = 15  # Extended timeout for proxy requests
+            
             # Step 1: Initial GET request to retrieve hidden values and session
             headers = {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko',
@@ -35,7 +48,13 @@ class EWUAuthenticator:
                 'Accept': '*/*'
             }
             
-            response = self.session.get(self.portal_url, headers=headers)
+            response = self.session.get(
+                self.portal_url, 
+                headers=headers,
+                proxies=proxies,
+                timeout=timeout,
+                verify=False
+            )
             
             if response.status_code != 200:
                 return {
@@ -94,7 +113,10 @@ class EWUAuthenticator:
                 self.portal_url,
                 data=post_data,
                 headers=login_headers,
-                allow_redirects=True
+                proxies=proxies,
+                timeout=timeout,
+                allow_redirects=True,
+                verify=False
             )
             
             if login_response.status_code != 200:

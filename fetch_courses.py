@@ -10,8 +10,9 @@ from typing import Dict, List, Optional
 class CourseFetcher:
     """Fetches course data from EWU portal"""
     
-    def __init__(self, session_id: str):
+    def __init__(self, session_id: str, proxy_address: Optional[str] = None):
         self.session_id = session_id
+        self.proxy_address = proxy_address
         self.api_url = "https://portal.ewubd.edu/api/Advising/GetAllRoutine"
         
     def fetch_courses(self) -> Dict[str, any]:
@@ -22,6 +23,18 @@ class CourseFetcher:
             Dictionary with status and course data
         """
         try:
+            # Setup proxy configuration if provided
+            proxies = None
+            timeout = 10
+            
+            if self.proxy_address:
+                proxy_url = f"http://{self.proxy_address}"
+                proxies = {
+                    "http": proxy_url,
+                    "https": proxy_url
+                }
+                timeout = 15  # Extended timeout for proxy requests
+            
             headers = {
                 'Accept': 'application/json, text/plain, */*',
                 'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 26_0_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/141.0.7390.41 Mobile/15E148 Safari/604.1',
@@ -32,6 +45,8 @@ class CourseFetcher:
             response = requests.get(
                 self.api_url,
                 headers=headers,
+                proxies=proxies,
+                timeout=timeout,
                 verify=False  # SSL verification disabled as in original PHP
             )
             

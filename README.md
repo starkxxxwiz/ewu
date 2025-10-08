@@ -7,6 +7,7 @@ A beautiful, interactive terminal-based Python tool for fetching course schedule
 ## ✨ Features
 
 - 🔐 **Secure Authentication** - Direct integration with EWU portal authentication system
+- 🌐 **Proxy Mode Support** - Optional proxy connection for enhanced privacy and accessibility
 - 📊 **Real-time Course Data** - Fetches live course schedules, availability, and details
 - 🎨 **Beautiful Terminal UI** - Clean, single-screen interface with smooth transitions
 - 📄 **Professional PDF Export** - Generate well-formatted PDF reports with course details
@@ -41,11 +42,12 @@ run.bat
 
 ### Step 3: Follow the Interactive Prompts
 
-1. Enter your Student ID
-2. Enter your password (hidden)
-3. View course statistics
-4. Confirm to save PDF report
-5. PDF saved to `output/` folder!
+1. **Choose Connection Mode** - Select Direct or Proxy connection
+2. **Enter your Student ID** - Your EWU student identification
+3. **Enter your password** - Hidden secure input
+4. **View course statistics** - Real-time data summary
+5. **Confirm PDF export** - Save professional report
+6. **PDF saved to `output/` folder!** - Ready to view
 
 ## 📦 Installation (Detailed)
 
@@ -53,7 +55,7 @@ run.bat
 
 1. **Download/Clone the Project**
    ```bash
-   git clone https://github.com/starkxxxwiz/ewu
+   git clone <repository-url>
    cd tool
    ```
 
@@ -70,7 +72,7 @@ run.bat
 
 1. **Download/Clone the Project**
    ```bash
-   git clone https://github.com/starkxxxwiz/ewu
+   git clone <repository-url>
    cd tool
    ```
 
@@ -90,7 +92,7 @@ run.bat
 
 The tool provides a clean, single-screen experience:
 
-**Screen 1: Authentication**
+**Screen 1: Connection Mode Selection**
 ```
   ______       ____  __  ______            __
  / ____/ | | /| / / / / / /_  __/___  ____  / /
@@ -104,11 +106,23 @@ The tool provides a clean, single-screen experience:
            This is educational tool just for course fetching.
 ======================================================================
 
-🆔 Student ID: 2020-1-60-123
-🔒 Password: ********
+═══ Connection Mode ═══
+
+❓ 🌐 Do you want to enable Proxy Mode? [y/N]: n
+ℹ️  Using Direct Connection
 ```
 
-**Screen 2: Course Fetching**
+**Screen 2: Authentication**
+```
+═══ Authentication ═══
+
+🆔 Student ID: 2020-1-60-123
+🔒 Password: ********
+🔐 Authenticating user...
+✅ Login successful! (took 2.34s)
+```
+
+**Screen 3: Course Fetching**
 ```
   ______       ____  __  ______            __
  [Banner remains visible]
@@ -133,7 +147,7 @@ The tool provides a clean, single-screen experience:
 ❓ Would you like to save this data as a PDF report? [Y/n]:
 ```
 
-**Screen 3: Success**
+**Screen 4: Success**
 ```
   ______       ____  __  ______            __
  [Banner remains visible]
@@ -147,6 +161,59 @@ The tool provides a clean, single-screen experience:
 ======================================================================
 ```
 
+## 🌐 Proxy Mode Configuration
+
+The tool now supports **Proxy Mode** for enhanced privacy and accessibility:
+
+### How Proxy Mode Works
+
+1. **Automatic Testing** - Tests all proxies in `proxy.txt` sequentially
+2. **First Working Proxy** - Uses the first proxy that successfully connects
+3. **Fallback to Direct** - Automatically switches to direct connection if no proxies work
+4. **Extended Timeouts** - Uses 15-second timeouts for proxy requests
+
+### Proxy Mode Example
+
+**When you choose "y" for Proxy Mode:**
+```
+═══ Connection Mode ═══
+
+❓ 🌐 Do you want to enable Proxy Mode? [y/N]: y
+ℹ️  Found 16 proxies to test
+
+🔍 Checking proxy 1/16: 202.5.54.22:2727 ...
+❌ Proxy 202.5.54.22:2727 failed
+🔍 Checking proxy 2/16: 103.134.242.121:8080 ...
+✅ Working proxy found: 103.134.242.121:8080
+🌐 Using Proxy Mode: 103.134.242.121:8080
+```
+
+### Setting Up Proxies
+
+1. **Edit `proxy.txt`** - Add your proxy addresses (one per line)
+2. **Format**: `ip:port` (e.g., `103.134.242.121:8080`)
+3. **Comments**: Lines starting with `#` are ignored
+4. **Test**: The tool automatically tests all proxies on startup
+
+**Example `proxy.txt`:**
+```
+# EWU Course Tool - Proxy Configuration
+# Format: ip:port (one per line)
+
+202.5.54.22:2727
+103.134.242.121:8080
+103.85.183.30:4995
+119.148.39.241:2727
+202.5.34.54:2525
+```
+
+### Proxy Mode Benefits
+
+- 🔒 **Enhanced Privacy** - Route traffic through proxy servers
+- 🌍 **Geographic Flexibility** - Access from different locations
+- 🛡️ **Network Bypass** - Overcome network restrictions
+- ⚡ **Automatic Failover** - Seamless fallback to direct connection
+
 ## 📂 Project Structure
 
 ```
@@ -155,8 +222,10 @@ tool/
 ├── auth.py              # EWU portal authentication
 ├── fetch_courses.py     # Course data fetching and parsing
 ├── pdf_export.py        # PDF report generation
+├── proxy_manager.py     # Proxy testing and management
 ├── utils.py             # Terminal UI utilities
 ├── requirements.txt     # Python dependencies
+├── proxy.txt            # Proxy configuration file
 ├── run.bat             # Windows batch file launcher
 ├── output/             # PDF reports saved here
 │   └── README.txt
@@ -167,21 +236,27 @@ tool/
 
 ### `main.py` - Application Controller
 - Orchestrates the entire workflow
-- Manages authentication and course fetching
-- Handles user interactions
+- Manages proxy mode selection and authentication
+- Handles user interactions and course fetching
 - Controls screen clearing and banner display
 
 ### `auth.py` - Authentication Module
 - Replicates EWU portal authentication
-- Manages session cookies
-- Handles login requests
-- Supports retry logic
+- Supports both direct and proxy connections
+- Manages session cookies and login requests
+- Handles retry logic and error management
 
 ### `fetch_courses.py` - Course Fetcher
 - Fetches course data via authenticated API
-- Parses JSON responses
-- Formats course information
+- Supports both direct and proxy connections
+- Parses JSON responses and formats course information
 - Error handling and validation
+
+### `proxy_manager.py` - Proxy Manager
+- Tests proxy connectivity automatically
+- Manages proxy configuration and selection
+- Handles proxy file parsing and validation
+- Provides fallback to direct connection
 
 ### `pdf_export.py` - PDF Generator
 - Creates professional PDF reports
@@ -241,18 +316,25 @@ This is intentional and matches the original PHP implementation.
 - ✅ Ensure EWU portal is accessible
 - ✅ Wait a moment and try again
 
-**3. Module Not Found Error**
+**3. Proxy Mode Issues**
+- ✅ Check `proxy.txt` format (ip:port)
+- ✅ Verify proxy addresses are valid
+- ✅ Test proxies manually if needed
+- ✅ Tool automatically falls back to direct mode
+- ✅ Use extended timeout (30s) for slow proxies
+
+**4. Module Not Found Error**
 ```bash
 # Reinstall dependencies
 pip install -r requirements.txt --upgrade
 ```
 
-**4. PDF Generation Failed**
+**5. PDF Generation Failed**
 - ✅ Check write permissions in output folder
 - ✅ Ensure sufficient disk space
 - ✅ Verify reportlab is installed correctly
 
-**5. Import Errors**
+**6. Import Errors**
 ```bash
 # Ensure you're in the correct directory
 cd tool
@@ -267,6 +349,8 @@ pip install -r requirements.txt
 - ✅ No data sent to third parties
 - ✅ All data stays on your local machine
 - ✅ HTTPS connection to EWU portal
+- ✅ Optional proxy support for enhanced privacy
+- ✅ Automatic proxy testing and validation
 
 ## 📝 Dependencies
 
@@ -330,16 +414,17 @@ For issues or questions:
 ## 🚀 Future Enhancements
 
 Potential improvements (contributions welcome):
+- [x] **Proxy Mode Support** - ✅ Completed!
 - [ ] Course filtering by department
 - [ ] Export to CSV format
 - [ ] Email notification for seat availability
 - [ ] Course comparison between semesters
 - [ ] Advanced search and filtering
 - [ ] Multiple export format options
+- [ ] Proxy rotation and load balancing
 
 ---
 
 **Made with ❤️ for EWU Students**
 
 *Happy Course Browsing! 🎓*
-

@@ -13,6 +13,7 @@ from typing import Optional
 from auth import EWUAuthenticator
 from fetch_courses import CourseFetcher
 from pdf_export import PDFExporter
+from proxy_manager import ProxyManager
 from utils import (
     display_banner,
     clear_screen,
@@ -39,11 +40,18 @@ class EWUCourseTool:
         self.user_id: Optional[str] = None
         self.courses: list = []
         self.fetch_time: float = 0.0
+        self.proxy_manager = ProxyManager()
+        self.active_proxy: Optional[str] = None
     
     def run(self):
         """Main application flow"""
         # Display banner
         display_banner()
+        
+        # Step 0: Proxy Mode Selection
+        if not self.setup_proxy_mode():
+            print_error("Proxy setup failed. Exiting...")
+            sys.exit(1)
         
         # Step 1: Authentication
         if not self.authenticate():
@@ -68,6 +76,48 @@ class EWUCourseTool:
         else:
             # No courses, just show goodbye
             display_goodbye()
+    
+    def setup_proxy_mode(self) -> bool:
+        """
+        Setup proxy mode based on user choice
+        
+        Returns:
+            True if setup successful, False otherwise
+        """
+        console.print()
+        console.print("[bold cyan]═══ Connection Mode ═══[/bold cyan]")
+        console.print()
+        
+        try:
+            # Ask user about proxy mode
+            enable_proxy = prompt_yes_no("🌐 Do you want to enable Proxy Mode?", default=False)
+            
+            if enable_proxy:
+                console.print()
+                print_info("Testing available proxies...")
+                
+                # Find working proxy
+                self.active_proxy = self.proxy_manager.get_live_proxy()
+                
+                if self.active_proxy:
+                    print_success(f"Using Proxy Mode: {self.active_proxy}")
+                    console.print()
+                else:
+                    print_info("No working proxies found. Switching to direct mode.")
+                    console.print()
+            else:
+                print_info("Using Direct Connection")
+                console.print()
+            
+            return True
+            
+        except KeyboardInterrupt:
+            console.print()
+            print_info("Proxy setup cancelled by user")
+            return False
+        except Exception as e:
+            print_error(f"Unexpected error during proxy setup: {str(e)}")
+            return False
     
     def authenticate(self) -> bool:
         """
@@ -107,7 +157,7 @@ class EWUCourseTool:
                 start_time = time.time()
                 
                 # Perform authentication
-                result = self.authenticator.authenticate(self.user_id, password)
+                result = self.authenticator.authenticate(self.user_id, password, self.active_proxy)
                 
                 auth_time = time.time() - start_time
                 
@@ -117,7 +167,7 @@ class EWUCourseTool:
                     
                     # Initialize course fetcher
                     session_id = self.authenticator.get_session_id()
-                    self.course_fetcher = CourseFetcher(session_id)
+                    self.course_fetcher = CourseFetcher(session_id, self.active_proxy)
                     
                     return True
                 else:
